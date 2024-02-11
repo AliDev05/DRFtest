@@ -23,61 +23,37 @@ class ConverterCreateAPIView(CreateAPIView):
 
 
 
-class DateAPIView(APIView):
+class DateTimeAPIView(APIView):
     serializer_class = ConverterSerializer
 
-    def get(self, request, datedigits):
-        end_date = datetime.now().date()
+    def get(self, request, datetimedigits):
+        end_datetime = datetime.now()
 
-        num = int(datedigits[:len(datedigits)-1])
-        let = datedigits[-1]
+        num = int(datetimedigits[:len(datetimedigits)-1])
+        let = datetimedigits[-1]
 
         if let == 'w':
-            start_date = end_date - timedelta(weeks=num)
-        else :
-            start_date = end_date - timedelta(days=num)
-
+            start_datetime = end_datetime - timedelta(weeks=num)
+        elif let == 'd':
+            start_datetime = end_datetime - timedelta(days=num)
+        elif let == 'h':                                                        # Метод с указанием на конце даты
+            start_datetime = end_datetime - timedelta(hours=num)
+        elif let == 'm':
+            start_datetime = end_datetime - timedelta(minutes=num)
+        else:
+            start_datetime = end_datetime - timedelta(seconds=num)
+            
 
 
         queryset = Converter.objects.filter(
-            last_update_date__gte=start_datetime,
-            last_update_date__lte=end_datetime,
+            last_update_datetime__gte=start_datetime,
+            last_update_datetime__lte=end_datetime
         )
 
 
         serializer = self.serializer_class(queryset, many=True)
         return Response(serializer.data)
 
-
-"""class TimeAPIView(APIView):
-    serializer_class = ConverterSerializer
-
-    def get(self, request, timedigits):
-        end_time = datetime.now()
-
-        num = int(timedigits[:len(timedigits)-1])
-        let = timedigits[-1]
-
-        if let == 'h':
-            start_time = end_time - timedelta(hours=num)
-        elif let == 'm' :
-            start_time = end_time - timedelta(minutes=num)
-        else :
-            start_time = end_time - timedelta(seconds=num)
-
-        print(start_time)
-        print(end_time)
-
-
-        queryset = Converter.objects.filter(
-            last_update_time__gte=start_time,
-            last_update_time__lte=end_time
-        )
-
-
-        serializer = self.serializer_class(queryset, many=True)
-        return Response(serializer.data)
-"""
 
 
 
