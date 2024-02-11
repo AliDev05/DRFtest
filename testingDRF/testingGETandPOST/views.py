@@ -23,7 +23,7 @@ class ConverterCreateAPIView(CreateAPIView):
 
 
 
-class DateTimeAPIView(APIView):
+class DateTimeLetterFilterAPIView(APIView):
     serializer_class = ConverterSerializer
 
     def get(self, request, datetimedigits):
@@ -57,63 +57,26 @@ class DateTimeAPIView(APIView):
 
 
 
-"""class DateTimeAPIView(ListAPIView):
+from dateutil.relativedelta import relativedelta
+
+class DateTimePositionFilterAPIView(APIView):
     serializer_class = ConverterSerializer
 
-    def get_queryset(self):
-        datetimedigits = self.kwargs['datetime']
+    def get(self, request, datetimedigits):
+        print(datetimedigits)
+        datetime_list = datetimedigits.split(':')
+        print(datetime_list)
+
         end_datetime = datetime.now()
+        date_to_subtract = relativedelta(years=+int(datetime_list[0]), months=+int(datetime_list[1]), days=int(datetime_list[2]), hours=+int(datetime_list[3]), minutes=+int(datetime_list[4]), seconds=+int(datetime_list[5]) )
+        start_datetime = end_datetime - date_to_subtract
+        print(start_datetime)
+        print(end_datetime)
 
-        num = int(datetimedigits[:len(datetimedigits)-1])
-        let = datetimedigits[-1]
-
+        queryset = Converter.objects.filter(
+            last_update_datetime__gte=start_datetime,
+            last_update_datetime__lt=end_datetime
+        )
         
-
-
-        if let == 'w':
-            start_datetime = end_datetime - timedelta(weeks=num)
-        elif let == 'd':
-            start_datetime = end_datetime - timedelta(days=num)
-        elif let == 'h':
-            start_datetime = end_datetime - timedelta(hours=num)
-        elif let == 'm':
-            start_datetime = end_datetime - timedelta(minutes=num)
-        else :
-            start_datetime = end_datetime - timedelta(seconds=num)
-
-            
-        queryset = Converter.objects.filter(
-            last_update_date__gte=start_datetime.date(),
-            last_update_date__lt=end_datetime.date(),
-            last_update_time__gte=start_datetime.time(),
-            last_update_time__lt=end_datetime.time()
-        )
-
-        return queryset
-
-"""
-
-
-
-
-#from dateutil.relativedelta import relativedelta
-
-"""class DateFilterAPIView(ListAPIView):
-    serializer_class = ConverterSerializer
-
-    def get_queryset(self):
-        datedigits = self.kwargs['datedigits']
-        year = int(datedigits[:2])
-        month = int(datedigits[2:4])
-        day = int(datedigits[4:6])
-
-        end_date = datetime.now().date()
-        date_to_subtract = relativedelta(years=year, months=month, days=day)
-        start_date = end_date - date_to_subtract
-
-        queryset = Converter.objects.filter(
-            last_update_date__gte=start_date,
-            last_update_date__lt=end_date
-        )
-        return queryset
-"""
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
